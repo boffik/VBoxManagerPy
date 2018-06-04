@@ -1,5 +1,6 @@
 import subprocess as sp
 import sys
+import argparse
 
 #list of commands
 cmd_vmlist  = 'VBoxManage list vms'
@@ -10,6 +11,13 @@ cmd_resetvm = 'VBoxManage controlvm %s reset'
 #list of user input actions
 user_acts = ["'start'", "'stop'", "'reset'"]
 
+def print_allvms_state(list):
+    j = 0
+    for item in list:
+        j += 1
+        vm = get_vminfo(item)
+        print('%d: VM "%s" is %s' % (j, vm['name'], vm['VMState']))
+
 def check_allvms_state():
     ret = []
     if list_vm is not None:
@@ -17,7 +25,6 @@ def check_allvms_state():
         for key in sorted(list_vm.keys()):
             j += 1;
             ret.append(list_vm[key])
-            print('%d: VM "%s" is %s' % (j, key, __check_property__(list_vm[key],'VMState')))
     else:
         print('No VMs available for this user.')
     return(ret, j)
@@ -64,7 +71,7 @@ def __shell_cmd__(cmd,list,sep):
     while True:
         s = p.stdout.readline().decode('utf-8').replace('"','').replace('{','').replace('}','')
         new = s[:len(s)-1].split(sep)
-        if len(s) == 0:
+        if new[0] == '':
             break
         else:
             list[new[0]] = new[1]
@@ -77,13 +84,15 @@ def __shell_cmd_wo__(cmd, output=True):
         for i in p:
             print(i.decode('utf-8').replace('\n','').split(': ')[-1])
 
-list_vm = get_vmlist()
+def print_info():
+    print('- ' * 15)
+    print('VirtualBox VMs state:')
+    print('- ' * 15)
+    print_allvms_state(p[0])
+    print()
 
 def start_program():
-    print('VirtualBox VMs state:')
-    print()
-    p = check_allvms_state()
-    print()
+    print_info()
     print("Please type an action %s with VM or 'exit' to close program" % ('|'.join(user_acts)))
     act = str(input('> '))
     if act == 'exit':
@@ -104,12 +113,32 @@ def start_program():
         print('You are enter a wrong VM number.')
 
 
-if __name__ == '__main__':
-    argv = [str(arg) for arg in sys.argv[1::2]]
-    if len(argv) % 2 == 1:
-        print(argv)
-    elif len(argv) == 0:
-        start_program()
-    else:
-        print('Wrong arguments')
+def args_parse():
+    parser=argparse.ArgumentParser(description='VboxManagerPy script',add_help=False)
+    parser.add_argument('-a', '--action', help='(%s) type an action with VMs' % ('|'.join(user_acts)))
+    parser.add_argument('--id', metavar='id', type=int, help='type a number of VM')
+    parser.add_argument('-l', '--list', action='store_true', default=False, help='print a list of VMs')
+    return parser
 
+if __name__ == '__main__':
+    ap = args_parse()
+    args = ap.parse_args()
+    list_vm = get_vmlist()
+    p = check_allvms_state()
+
+    if args.list:
+        print_info()
+    elif args.id or args.action:
+        if args.id:
+            if args.action == 'start':
+                start_vm(p[0][args.id-1])
+            elif args.action == 'stop':
+                stop_vm(p[0][args.id-1])
+            elif args.action == 'reset':
+                restart_vm(p[0][args.id-1])
+            else:
+                print('You are enter a wrong action.')
+        else:
+            print('manager.py: error: use --id argument with --action.')
+    else:
+        start_program()
