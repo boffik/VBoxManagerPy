@@ -9,7 +9,7 @@ cmd_stopvm  = 'VBoxManage controlvm %s poweroff'
 cmd_startvm = 'VBoxManage startvm %s --type headless'
 cmd_resetvm = 'VBoxManage controlvm %s reset'
 #list of user input actions
-user_acts = ["'start'", "'stop'", "'reset'"]
+user_acts = ["start", "stop", "reset"]
 
 def print_allvms_state(list):
     j = 0
@@ -115,8 +115,8 @@ def start_program():
 
 def args_parse():
     parser=argparse.ArgumentParser(description='VboxManagerPy script',add_help=False)
-    parser.add_argument('-a', '--action', help='(%s) type an action with VMs' % ('|'.join(user_acts)))
-    parser.add_argument('--id', metavar='id', type=int, help='type a number of VM')
+    parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs')
+    parser.add_argument('--id', metavar='id', type=int, help='type a VM number')
     parser.add_argument('-l', '--list', action='store_true', default=False, help='print a list of VMs')
     return parser
 
@@ -136,9 +136,8 @@ if __name__ == '__main__':
                 stop_vm(p[0][args.id-1])
             elif args.action == 'reset':
                 restart_vm(p[0][args.id-1])
-            else:
-                print('You are enter a wrong action.')
         else:
             print('manager.py: error: use --id argument with --action.')
+            ap.print_help()
     else:
         start_program()
