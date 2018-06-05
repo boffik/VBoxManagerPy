@@ -113,10 +113,20 @@ def start_program():
         print('You are enter a wrong VM number.')
 
 
+def do_actions_vm(id_list, action):
+    for id in id_list:
+        if action == 'start':
+            start_vm(p[0][id-1])
+        elif action == 'stop':
+            stop_vm(p[0][id-1])
+        elif action == 'reset':
+            restart_vm(p[0][id-1])
+
+
 def args_parse():
     parser=argparse.ArgumentParser(description='VboxManagerPy script',add_help=False)
     parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs')
-    parser.add_argument('--id', metavar='id', type=int, help='type a VM number')
+    parser.add_argument('--id', metavar='id', nargs='*', type=int, help='type a VM number or VM numbers through space')
     parser.add_argument('-l', '--list', action='store_true', default=False, help='print a list of VMs')
     return parser
 
@@ -130,12 +140,7 @@ if __name__ == '__main__':
         print_info()
     elif args.id or args.action:
         if args.id:
-            if args.action == 'start':
-                start_vm(p[0][args.id-1])
-            elif args.action == 'stop':
-                stop_vm(p[0][args.id-1])
-            elif args.action == 'reset':
-                restart_vm(p[0][args.id-1])
+            do_actions_vm(args.id, args.action)
         else:
             print('manager.py: error: use --id argument with --action.')
             ap.print_help()
