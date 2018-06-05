@@ -101,12 +101,8 @@ def start_program():
     print("Please type a number VM")
     num = int(input('> '))
     if num > 0 and num <= p[1]:
-        if act == 'start':
-            start_vm(p[0][num-1])
-        elif act == 'stop':
-            stop_vm(p[0][num-1])
-        elif act == 'reset':
-            restart_vm(p[0][num-1])
+        if act in user_acts:
+            do_actions_vm([num], act)
         else:
             print('You are enter a wrong action.')
     else:
