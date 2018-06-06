@@ -121,7 +121,8 @@ def do_actions_vm(id_list, action):
 
 def args_parse():
     parser=argparse.ArgumentParser(description='VboxManagerPy script',add_help=False)
-    parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs')
+    parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs.\nUse this this \'--id\' or \'--name\'')
+    parser.add_argument('-n', '--name', nargs="*", help='VM name or names through space')
     parser.add_argument('--id', metavar='id', nargs='*', type=int, help='type a VM number or VM numbers through space')
     parser.add_argument('-l', '--list', action='store_true', default=False, help='print a list of VMs')
     return parser
