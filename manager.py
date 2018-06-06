@@ -86,7 +86,7 @@ def __shell_cmd_wo__(cmd, output=True):
 
 def print_info():
     print('- ' * 15)
-    print('VirtualBox VMs state:')
+    print('VirtualBox VMs status list:')
     print('- ' * 15)
     print_allvms_state(p[0])
     print()
@@ -102,29 +102,44 @@ def start_program():
     num = int(input('> '))
     if num > 0 and num <= p[1]:
         if act in user_acts:
-            do_actions_vm([num], act)
+            do_action_vm([num], act)
         else:
             print('You are enter a wrong action.')
     else:
         print('You are enter a wrong VM number.')
 
+def do_action(uiid, action):
+    if action == 'start':
+        start_vm(uiid)
+    elif action == 'stop':
+        stop_vm(uiid)
+    elif action == 'reset':
+        restart_vm(uiid)
 
-def do_actions_vm(id_list, action):
+def do_action_vm(id_list, action):
     for id in id_list:
-        if action == 'start':
-            start_vm(p[0][id-1])
-        elif action == 'stop':
-            stop_vm(p[0][id-1])
-        elif action == 'reset':
-            restart_vm(p[0][id-1])
+        do_action(p[0][id-1], action)
+
+def do_action_name(names, action):
+    for name in names:
+        try:
+            uiid = list_vm[name.replace("'","")]
+        except:
+            uiid = None
+
+        if uiid != None:
+            do_action(uiid, action)
+        else:
+            print('VM name \'%s\' not found. Check this in all VMs list.' % name)
 
 
 def args_parse():
     parser=argparse.ArgumentParser(description='VboxManagerPy script',add_help=False)
-    parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs.\nUse this this \'--id\' or \'--name\'')
-    parser.add_argument('-n', '--name', nargs="*", help='VM name or names through space')
+    parser.add_argument('-s', '--standalone', action='store_true', default=False, help='run script as program')
+    parser.add_argument('-a', '--action', choices=user_acts, help='type an action with VMs. Use this with \'--id\' or \'--name\'')
+    parser.add_argument('-n', '--name', nargs="*", help='VM name or names through space ')
     parser.add_argument('--id', metavar='id', nargs='*', type=int, help='type a VM number or VM numbers through space')
-    parser.add_argument('-l', '--list', action='store_true', default=False, help='print a list of VMs')
+    parser.add_argument('-l', '--list', action='store_true', default=False, help='print a status list of VMs')
     return parser
 
 if __name__ == '__main__':
@@ -135,11 +150,15 @@ if __name__ == '__main__':
 
     if args.list:
         print_info()
-    elif args.id or args.action:
+    elif args.standalone:
+        start_program()
+    elif args.id or args.action or args.name:
         if args.id:
-            do_actions_vm(args.id, args.action)
+            do_action_vm(args.id, args.action)
+        elif args.name:
+            do_action_name(args.name, args.action)
         else:
-            print('manager.py: error: use --id argument with --action.')
+            print('manager.py: error: use \'--id\' or \'--name\' argument with \'--action\'.')
             ap.print_help()
     else:
-        start_program()
+        ap.print_help()
