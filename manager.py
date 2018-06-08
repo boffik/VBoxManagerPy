@@ -11,14 +11,19 @@ cmd_resetvm = 'VBoxManage controlvm %s reset'
 #list of user input actions
 user_acts = ["start", "stop", "reset"]
 
+
 def print_allvms_state(list):
+    """get list of VMs and print on console its states"""
+
     j = 0
     for item in list:
         j += 1
         vm = get_vminfo(item)
         print('%d: VM "%s" is %s' % (j, vm['name'], vm['VMState']))
 
+
 def check_allvms_state():
+    """ return sorted list of VMs and VMs count """
     ret = []
     if list_vm is not None:
         j = 0
@@ -29,18 +34,26 @@ def check_allvms_state():
         print('No VMs available for this user.')
     return(ret, j)
 
+
 def __check_property__(uiid,prop):
+    """ check property of VM by its uiid """
     return get_vminfo(uiid)[prop]
 
+
 def restart_vm(uiid):
+    """ restart VM by its uiid """
     cmd = cmd_resetvm % (uiid)
     return __shell_cmd_wo__(cmd)
 
+
 def start_vm(uiid):
+    """ start VM by its uiid """
     cmd = cmd_startvm % (uiid)
     return __shell_cmd_wo__(cmd)
 
+
 def stop_vm(uiid):
+    """ check VM state by it uiid and stop it if it state not 'poweroff' """
     state = __check_property__(uiid,'VMState')
     if state != 'poweroff':
         cmd = cmd_stopvm % (uiid)
@@ -49,12 +62,17 @@ def stop_vm(uiid):
     else:
         print('VM is already %s' % state)
 
+
 def get_vminfo(uiid):
+    """ get VM info by it uiid """
     cmd = cmd_vminfo % (uiid)
     return __get_cmd__(cmd, '=')
 
+
 def get_vmlist():
+    """ get VMs list """
     return __get_cmd__(cmd_vmlist, ' ')
+
 
 def __get_cmd__(cmd,sep):
     list = dict()
@@ -63,6 +81,7 @@ def __get_cmd__(cmd,sep):
         return list
     else:
         print('No output from cmd \'%s\'' % cmd)
+
 
 def __shell_cmd__(cmd,list,sep):
     p = __shell_cmd_wo__(cmd, output=False)
@@ -75,6 +94,7 @@ def __shell_cmd__(cmd,list,sep):
         else:
             list[new[0]] = new[1]
 
+
 def __shell_cmd_wo__(cmd, output=True):
     PIPE = sp.PIPE
     p = sp.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=sp.STDOUT, \
@@ -85,12 +105,14 @@ def __shell_cmd_wo__(cmd, output=True):
     else:
         return(p)
 
+
 def print_info():
     print('- ' * 15)
     print('VirtualBox VMs status list:')
     print('- ' * 15)
     print_allvms_state(p[0])
     print()
+
 
 def start_program():
     print_info()
@@ -109,6 +131,7 @@ def start_program():
     else:
         print('You are enter a wrong VM number.')
 
+
 def do_action(uiid, action):
     if action == 'start':
         start_vm(uiid)
@@ -117,9 +140,11 @@ def do_action(uiid, action):
     elif action == 'reset':
         restart_vm(uiid)
 
+
 def do_action_vm(id_list, action):
     for id in id_list:
         do_action(p[0][id-1], action)
+
 
 def do_action_name(names, action):
     for name in names:
@@ -128,7 +153,7 @@ def do_action_name(names, action):
         except:
             uiid = None
 
-        if uiid != None:
+        if uiid:
             do_action(uiid, action)
         else:
             print('VM name \'%s\' not found. Check this in all VMs list.' % name)
@@ -142,6 +167,7 @@ def args_parse():
     parser.add_argument('--id', metavar='id', nargs='*', type=int, help='type a VM number or VM numbers through space')
     parser.add_argument('-l', '--list', action='store_true', default=False, help='print a status list of VMs')
     return parser
+
 
 if __name__ == '__main__':
     ap = args_parse()
