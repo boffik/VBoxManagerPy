@@ -65,8 +65,7 @@ def __get_cmd__(cmd,sep):
         print('No output from cmd \'%s\'' % cmd)
 
 def __shell_cmd__(cmd,list,sep):
-    PIPE = sp.PIPE
-    p = sp.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=sp.STDOUT, close_fds=True)
+    p = __shell_cmd_wo__(cmd, output=False)
 
     while True:
         s = p.stdout.readline().decode('utf-8').replace('"','').replace('{','').replace('}','')
@@ -79,10 +78,12 @@ def __shell_cmd__(cmd,list,sep):
 def __shell_cmd_wo__(cmd, output=True):
     PIPE = sp.PIPE
     p = sp.Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=sp.STDOUT, \
-        close_fds=True).stdout.readlines()
+        close_fds=True)
     if output:
-        for i in p:
+        for i in p.stdout.readlines():
             print(i.decode('utf-8').replace('\n','').split(': ')[-1])
+    else:
+        return(p)
 
 def print_info():
     print('- ' * 15)
